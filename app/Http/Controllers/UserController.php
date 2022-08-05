@@ -5,27 +5,27 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreUpdateFormRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Termwind\Components\Dd;
 
 class UserController extends Controller
 {
+    protected $model;
+
+    public function __construct(User $user)
+    {
+        $this->model = $user;
+    }
     public function index(Request $request)
     {
-        $search = $request->search;
-        $users = User::where(function($query) use ($search)
-        {
-            if($search)
-                $query->where('email', $search);
-                $query->orWhere('name', 'LIKE', "%{$search}%");
-        })->get();
+        $users = $this->model
+            ->getUsers(
+                search: $request->search ?? ''
+            );
 
         return view('users.index', compact('users'));
     }
 
     public function show($id)
     {
-       // $user = User::where('id', $id)->first();
-
         if(!$user = User::find($id))
 
             return redirect()->route('users.index');
@@ -72,9 +72,6 @@ class UserController extends Controller
         $user->update($data);
 
         return redirect()->route('users.index');
-
-        //dd($request->all());
-        //return view('users.edit', compact('user'));
 
     }
 
